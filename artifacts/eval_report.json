@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-14T16:05:20.488011",
+  "generated_at": "2026-04-14T20:49:57.864457",
   "day08_single_agent": {
     "total_questions": 15,
-    "avg_confidence": 0.75,
-    "avg_latency_ms": 1500,
-    "abstain_rate": "13%",
-    "multi_hop_accuracy": "60%",
-    "accuracy": 0.8
+    "faithfulness": 4.9,
+    "answer_relevance": 4.8,
+    "context_recall": 50,
+    "completeness": 4.0,
+    "latency_ms": 4735
   },
   "day09_multi_agent": {
-    "total_traces": 3,
+    "total_traces": 63,
     "routing_distribution": {
-      "policy_tool_worker": "3/3 (100%)"
+      "retrieval_worker": "32/63 (50%)",
+      "policy_tool_worker": "31/63 (49%)"
     },
-    "avg_confidence": 0.75,
-    "avg_latency_ms": 0,
-    "mcp_usage_rate": "0/3 (0%)",
-    "hitl_rate": "0/3 (0%)",
+    "avg_confidence": 0.22,
+    "latency_ms": 5881,
+    "mcp_usage_rate": "28/63 (44%)",
+    "hitl_rate": "4/63 (6%)",
     "top_sources": [
       [
         "sla_p1_2026.txt",
         3
       ]
-    ]
+    ],
+    "answer_relevance": 4.762,
+    "faithfulness": 4.762,
+    "context_recall": 0.0,
+    "completeness": 0.952
   },
   "analysis": {
     "routing_visibility": "Day 09 có route_reason cho từng câu → dễ debug hơn Day 08",
-    "latency_delta": "-1500ms (Giảm so với Single-Agent)",
-    "confidence_delta": "+0.00",
-    "debuggability": "Multi-agent: Có thể test/cân chỉnh từng worker (Vector vs Web) độc lập.",
-    "mcp_benefit": "Day 09: MCP Tools cho phép mở rộng khả năng search mà không làm phình prompt chính.",
-    "summary": "Multi-agent cải thiện độ chính xác ở câu hỏi phức tạp nhưng có thể tăng latency do overhead của Supervisor."
+    "latency_delta": -1146,
+    "faithfulness_delta": 0.1380000000000008,
+    "answer_relevance_delta": 0.038000000000000256,
+    "context_recall_delta": 0.0,
+    "completeness_delta": 3.048
   }
 }
