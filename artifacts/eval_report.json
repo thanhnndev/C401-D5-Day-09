@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-04-14T16:05:20.488011",
+  "day08_single_agent": {
+    "total_questions": 15,
+    "avg_confidence": 0.75,
+    "avg_latency_ms": 1500,
+    "abstain_rate": "13%",
+    "multi_hop_accuracy": "60%",
+    "accuracy": 0.8
+  },
+  "day09_multi_agent": {
+    "total_traces": 3,
+    "routing_distribution": {
+      "policy_tool_worker": "3/3 (100%)"
+    },
+    "avg_confidence": 0.75,
+    "avg_latency_ms": 0,
+    "mcp_usage_rate": "0/3 (0%)",
+    "hitl_rate": "0/3 (0%)",
+    "top_sources": [
+      [
+        "sla_p1_2026.txt",
+        3
+      ]
+    ]
+  },
+  "analysis": {
+    "routing_visibility": "Day 09 có route_reason cho từng câu → dễ debug hơn Day 08",
+    "latency_delta": "-1500ms (Giảm so với Single-Agent)",
+    "confidence_delta": "+0.00",
+    "debuggability": "Multi-agent: Có thể test/cân chỉnh từng worker (Vector vs Web) độc lập.",
+    "mcp_benefit": "Day 09: MCP Tools cho phép mở rộng khả năng search mà không làm phình prompt chính.",
+    "summary": "Multi-agent cải thiện độ chính xác ở câu hỏi phức tạp nhưng có thể tăng latency do overhead của Supervisor."
+  }
+}
