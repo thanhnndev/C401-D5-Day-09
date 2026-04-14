@@ -18,6 +18,14 @@ Gọi độc lập để test:
 
 import os
 
+# Load .env if available
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 WORKER_NAME = "synthesis_worker"
 
 SYSTEM_PROMPT = """Bạn là trợ lý IT Helpdesk nội bộ.

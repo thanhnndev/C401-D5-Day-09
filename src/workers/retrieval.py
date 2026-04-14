@@ -17,6 +17,15 @@ Gọi độc lập để test:
 
 import os
 import sys
+from pathlib import Path
+
+# Load .env if available
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
 
 # ─────────────────────────────────────────────
 # Worker Contract (xem contracts/worker_contracts.yaml)
@@ -84,12 +93,15 @@ def _get_embedding_fn():
 
 def _get_collection():
     """
-    Kết nối ChromaDB collection.
-    TODO Sprint 2: Đảm bảo collection đã được build từ Step 3 trong README.
+    Kết nối ChromaDB collection từ project root.
     """
     import chromadb
 
-    client = chromadb.PersistentClient(path="./chroma_db")
+    # Xác định project root (3 levels up từ workers/retrieval.py)
+    project_root = Path(__file__).parent.parent.parent
+    chroma_path = project_root / "chroma_db"
+
+    client = chromadb.PersistentClient(path=str(chroma_path))
     try:
         collection = client.get_collection("day09_docs")
     except Exception:
