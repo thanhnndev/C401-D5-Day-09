@@ -50,14 +50,11 @@ class AgentState(TypedDict):
     supervisor_route: str  # Worker được chọn bởi supervisor
     latency_ms: Optional[int]  # Thời gian xử lý (ms)
     run_id: str  # ID của run này
-<<<<<<< HEAD
 
     faithfulness: float
     answer_relevance: float
     context_recall: float
     completeness: float
-=======
->>>>>>> cb0bf2a (refactor: standardize comments and improve code readability in graph.py)
 
 
 def make_initial_state(task: str) -> AgentState:
@@ -112,20 +109,11 @@ def supervisor_node(state: AgentState) -> AgentState:
     # - mã lỗi không rõ (ERR-XXX), không đủ context → human_review
     # - còn lại → retrieval_worker
 
-<<<<<<< HEAD
     route = "retrieval_worker"
     route_reason = "default route to general retrieval"
     needs_tool = False
     risk_high = False
 
-=======
-    route = "retrieval_worker"  # TODO: thay bằng logic thực
-    route_reason = "default route"  # TODO: thay bằng lý do thực
-    needs_tool = False
-    risk_high = False
-
-    # Ví dụ routing cơ bản — nhóm phát triển thêm:
->>>>>>> cb0bf2a (refactor: standardize comments and improve code readability in graph.py)
     policy_keywords = [
         "hoàn tiền",
         "refund",
@@ -222,34 +210,19 @@ from workers.synthesis import run as synthesis_run
 
 def retrieval_worker_node(state: AgentState) -> AgentState:
     """Wrapper gọi retrieval worker."""
-<<<<<<< HEAD
     # TODO Sprint 2: Thay bằng retrieval_run(state)
-=======
-    from workers.retrieval import run as retrieval_run
-
->>>>>>> cb0bf2a (refactor: standardize comments and improve code readability in graph.py)
     return retrieval_run(state)
 
 
 def policy_tool_worker_node(state: AgentState) -> AgentState:
     """Wrapper gọi policy/tool worker."""
-<<<<<<< HEAD
     # TODO Sprint 2: Thay bằng policy_tool_run(state)
-=======
-    from workers.policy_tool import run as policy_tool_run
-
->>>>>>> cb0bf2a (refactor: standardize comments and improve code readability in graph.py)
     return policy_tool_run(state)
 
 
 def synthesis_worker_node(state: AgentState) -> AgentState:
     """Wrapper gọi synthesis worker."""
-<<<<<<< HEAD
     # TODO Sprint 2: Thay bằng synthesis_run(state)
-=======
-    from workers.synthesis import run as synthesis_run
-
->>>>>>> cb0bf2a (refactor: standardize comments and improve code readability in graph.py)
     return synthesis_run(state)
 
 
