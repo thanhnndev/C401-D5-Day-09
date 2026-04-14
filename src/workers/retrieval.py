@@ -18,6 +18,14 @@ Gọi độc lập để test:
 import os
 import sys
 
+from dotenv import load_dotenv
+load_dotenv()
+
+from openai import OpenAI
+import chromadb
+
+import random
+
 # ─────────────────────────────────────────────
 # Worker Contract (xem contracts/worker_contracts.yaml)
 # Input:  {"task": str, "top_k": int = 3}
@@ -30,26 +38,9 @@ DEFAULT_TOP_K = 3
 
 def _get_embedding_fn():
     """
-    Trả về embedding function.
-    TODO Sprint 1: Implement dùng OpenAI hoặc Sentence Transformers.
+    Trả về embedding function sử dụng OpenAI.
     """
-    # Option A: Sentence Transformers (offline, không cần API key)
     try:
-        from sentence_transformers import SentenceTransformer
-
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-
-        def embed(text: str) -> list:
-            return model.encode([text])[0].tolist()
-
-        return embed
-    except ImportError:
-        pass
-
-    # Option B: OpenAI / OpenAI-compatible (cần API key)
-    try:
-        from openai import OpenAI
-
         # Lấy config từ environment
         api_key = os.getenv("OPENAI_API_KEY", "")
         base_url = os.getenv("OPENAI_BASE_URL")
@@ -63,22 +54,24 @@ def _get_embedding_fn():
         client = OpenAI(**client_kwargs)
 
         def embed(text: str) -> list:
-            resp = client.embeddings.create(input=text, model=embedding_model)
+            # text-embedding-3 models support dimension truncating
+            # We add dimensions=1024 to match rag_lab dimension (1024) if using text-embedding-3
+            kwargs = {"input": text, "model": embedding_model}
+            if "text-embedding-3" in embedding_model:
+                kwargs["dimensions"] = 1024
+                
+            resp = client.embeddings.create(**kwargs)
             return resp.data[0].embedding
 
         return embed
     except ImportError:
+        print("⚠️ Lỗi: Không thể import openai. Cần cài đặt gói `openai`.")
         pass
 
-    # Fallback: random embeddings cho test (KHÔNG dùng production)
-    import random
-
     def embed(text: str) -> list:
-        return [random.random() for _ in range(384)]
+        return [random.random() for _ in range(1536)]
 
-    print(
-        "⚠️  WARNING: Using random embeddings (test only). Install sentence-transformers."
-    )
+    print("⚠️ WARNING: Using random embeddings (test only). Install openai & dotenv.")
     return embed
 
 
@@ -87,19 +80,16 @@ def _get_collection():
     Kết nối ChromaDB collection.
     TODO Sprint 2: Đảm bảo collection đã được build từ Step 3 trong README.
     """
-    import chromadb
 
     client = chromadb.PersistentClient(path="./chroma_db")
     try:
-        collection = client.get_collection("day09_docs")
+        # User defined data is in 'rag_lab', not 'day09_docs'
+        collection = client.get_collection("rag_lab")
     except Exception:
-        # Auto-create nếu chưa có
         collection = client.get_or_create_collection(
-            "day09_docs", metadata={"hnsw:space": "cosine"}
+            "rag_lab", metadata={"hnsw:space": "cosine"}
         )
-        print(
-            f"⚠️  Collection 'day09_docs' chưa có data. Chạy index script trong README trước."
-        )
+        print("⚠️  Collection 'rag_lab' chưa có data.")
     return collection
 
 
@@ -107,15 +97,9 @@ def retrieve_dense(query: str, top_k: int = DEFAULT_TOP_K) -> list:
     """
     Dense retrieval: embed query → query ChromaDB → trả về top_k chunks.
 
-    TODO Sprint 2: Implement phần này.
-    - Dùng _get_embedding_fn() để embed query
-    - Query collection với n_results=top_k
-    - Format result thành list of dict
-
     Returns:
         list of {"text": str, "source": str, "score": float, "metadata": dict}
     """
-    # TODO: Implement dense retrieval
     embed = _get_embedding_fn()
     query_embedding = embed(query)
 
