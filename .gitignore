@@ -1,1 +1,7 @@
 .env
+
+# py cache
+__pycache__/
+
+.evnv
+evnv
