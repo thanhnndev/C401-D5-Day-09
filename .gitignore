@@ -5,4 +5,9 @@ __pycache__/
 
 .evnv
 evnv
+
+venv/
+.venv/
+
 chroma_db/
+.chroma_db/

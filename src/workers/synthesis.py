@@ -18,6 +18,14 @@ Gọi độc lập để test:
 
 import os
 
+# Load .env if available
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 WORKER_NAME = "synthesis_worker"
 
 SYSTEM_PROMPT = """Bạn là trợ lý IT Helpdesk nội bộ.
@@ -34,14 +42,22 @@ Quy tắc nghiêm ngặt:
 def _call_llm(messages: list) -> str:
     """
     Gọi LLM để tổng hợp câu trả lời.
-    Hỗ trợ OpenAI API hoặc OpenAI-compatible endpoints (LM Studio, v.v.)
+    Sử dụng OpenAI API.
     """
-    # Option A: OpenAI / OpenAI-compatible (LM Studio, Ollama, vLLM)
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
     try:
         from openai import OpenAI
 
         # Lấy config từ environment
-        api_key = os.getenv("OPENAI_API_KEY", "")
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return "[SYNTHESIS ERROR] Không tìm thấy OPENAI_API_KEY trong file .env."
+            
         base_url = os.getenv("OPENAI_BASE_URL")
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
@@ -59,23 +75,8 @@ def _call_llm(messages: list) -> str:
             max_tokens=500,
         )
         return response.choices[0].message.content
-    except Exception:
-        pass
-
-    # Option B: Gemini
-    try:
-        import google.generativeai as genai
-
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        combined = "\n".join([m["content"] for m in messages])
-        response = model.generate_content(combined)
-        return response.text
-    except Exception:
-        pass
-
-    # Fallback: trả về message báo lỗi (không hallucinate)
-    return "[SYNTHESIS ERROR] Không thể gọi LLM. Kiểm tra API key trong .env."
+    except Exception as e:
+        return f"[SYNTHESIS ERROR] LLM gọi thất bại: {str(e)}"
 
 
 def _build_context(chunks: list, policy_result: dict) -> str:
@@ -101,14 +102,9 @@ def _build_context(chunks: list, policy_result: dict) -> str:
     return "\n\n".join(parts)
 
 
-def _estimate_confidence(chunks: list, answer: str, policy_result: dict) -> float:
+def _estimate_confidence(task: str, answer: str, chunks: list, policy_result: dict) -> float:
     """
-    Ước tính confidence dựa vào:
-    - Số lượng và quality của chunks
-    - Có exceptions không
-    - Answer có abstain không
-
-    TODO Sprint 2: Có thể dùng LLM-as-Judge để tính confidence chính xác hơn.
+    Ước tính confidence dùng LLM-as-Judge và fallback về heuristic nếu lỗi.
     """
     if not chunks:
         return 0.1  # Không có evidence → low confidence
@@ -116,15 +112,42 @@ def _estimate_confidence(chunks: list, answer: str, policy_result: dict) -> floa
     if "Không đủ thông tin" in answer or "không có trong tài liệu" in answer.lower():
         return 0.3  # Abstain → moderate-low
 
-    # Weighted average của chunk scores
+    context = _build_context(chunks, policy_result)
+    
+    judge_prompt = f"""Đánh giá độ tin cậy của câu trả lời dựa trên ngữ cảnh được cung cấp.
+Chỉ trả về MỘT SỐ THẬP PHÂN duy nhất từ 0.0 đến 1.0 (ví dụ: 0.85). Không giải thích gì thêm.
+
+Câu hỏi: {task}
+
+Ngữ cảnh:
+{context}
+
+Câu trả lời: {answer}
+
+Độ tin cậy:"""
+
+    messages = [
+        {"role": "system", "content": "Bạn là giám khảo AI. Chỉ trả về một số thập phân từ 0.0 đến 1.0 đại diện cho độ tin cậy của câu trả lời dựa trên sự hỗ trợ của ngữ cảnh."},
+        {"role": "user", "content": judge_prompt}
+    ]
+
+    try:
+        score_str = _call_llm(messages).strip()
+        import re
+        match = re.search(r"0\.\d+|1\.0", score_str)
+        if match:
+            confidence = float(match.group())
+            return round(max(0.1, min(1.0, confidence)), 2)
+    except Exception:
+        pass
+
+    # Fallback heuristic
     if chunks:
         avg_score = sum(c.get("score", 0) for c in chunks) / len(chunks)
     else:
         avg_score = 0
 
-    # Penalty nếu có exceptions (phức tạp hơn)
     exception_penalty = 0.05 * len(policy_result.get("exceptions_found", []))
-
     confidence = min(0.95, avg_score - exception_penalty)
     return round(max(0.1, confidence), 2)
 
@@ -153,7 +176,7 @@ Hãy trả lời câu hỏi dựa vào tài liệu trên.""",
 
     answer = _call_llm(messages)
     sources = list({c.get("source", "unknown") for c in chunks})
-    confidence = _estimate_confidence(chunks, answer, policy_result)
+    confidence = _estimate_confidence(task, answer, chunks, policy_result)
 
     return {
         "answer": answer,
