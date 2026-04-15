@@ -9,6 +9,7 @@
 | Đặng Hồ Hải | Supervisor Owner / Worker Owner | ___ |
 | Đào Phước Thịnh | MCP Owner | ___ |
 | Hồ Sỹ Minh Hà | Trace Evaluator | ___ |
+| Trần Xuân Trường | Trace & Docs Owner | ___ |
 | Nông Nguyễn Thành | Documentation Owner, Git Process Manager | ___ |
 
 **Ngày nộp:** 14/04/2026  
@@ -116,12 +117,14 @@ Câu đơn giản single-hop (VD: "SLA P1 là bao lâu?") không cần policy ch
 | Đào Văn Công | Retrieval & Synthesis workers, LLM Judge metrics | 2 |
 | Nguyễn Trí Nhân | Policy Tool worker, exception handling, MCP integration | 2 |
 | Đào Phước Thịnh | MCP Server (4 tools: search_kb, get_ticket_info, check_access_permission, create_ticket) | 3 |
-| Hồ Sỹ Minh Hà | Eval trace, comparison report (single vs multi) | 4 |
+| Hồ Sỹ Minh Hà | Eval trace, grading run, metrics analysis | 4 |
+| Trần Xuân Trường | Eval trace (compare single vs multi), grading questions analysis | 4 |
 | Nông Nguyễn Thành | Docs, Git process, OpenAI-compatible API setup, infrastructure | 1-4 |
 
 **Nhóm làm tốt:**
-- Phân chia vai trò rõ ràng, mỗi người chịu trách nhiệm 1 module cụ thể
+- Phân chia vai trò rõ ràng, mỗi người chịu trách nhiệm 1 module cụ thể (7 thành viên)
 - Git workflow tốt — branch convention rõ ràng (`sprint1/supervisor`, `sprint2/workers`), merge ít conflict
+- Eval team (2 người) hỗ trợ nhau tốt trong Sprint 4 — Hà và Trường phân chia rõ phần grading vs comparison
 
 **Chưa tốt:**
 - Communication giữa các sprint cần cải thiện, một số data contract thay đổi giữa chừng
